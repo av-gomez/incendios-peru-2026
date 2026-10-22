@@ -2,8 +2,8 @@
 
 **Pregunta:** ¿dónde debería actuar primero un *policy maker* esta semana, y qué tan grave es esta temporada frente a 2012–2025?
 
-Tarea de la sesión 07 (Datos raster) · Ciencia de Datos con Python · Universidad del Pacífico · 21-oct-2026.
-Todo con datos públicos, sin claves ni pagos, y corre en CPU.
+Tarea de la sesión 07 (Datos raster) · Ciencia de Datos con Python · 21-oct-2026.
+Todo con datos públicos, sin claves ni pagos.
 
 **Repositorio:** https://github.com/av-gomez/incendios-peru-2026
 

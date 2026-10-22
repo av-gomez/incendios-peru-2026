@@ -179,9 +179,9 @@ footer { font-size: 13.5px; color: var(--muted); padding-block: 0 40px; display:
 
 <header class="hero gut">
   <div class="ancho">
-    <span class="kicker">Informe técnico · Ciencia de Datos con Python · Universidad del Pacífico</span>
+    <span class="kicker">Informe técnico · Ciencia de Datos con Python</span>
     <h1>Incendios forestales en el Perú, octubre de 2026: dónde intervenir primero</h1>
-    <div class="autoria"><span>21 de octubre de 2026</span><span id="corte"></span><span>Datos abiertos · procesamiento en CPU</span></div>
+    <div class="autoria"><span>21 de octubre de 2026</span><span id="corte"></span><span>Datos abiertos</span></div>
     <div class="hero-grid">
       <div class="resumen">
         <span class="t">Resumen</span>
@@ -319,7 +319,7 @@ footer { font-size: 13.5px; color: var(--muted); padding-block: 0 40px; display:
     <details><summary>Ver la tabla del Cuadro 7</summary>
       <div class="tw"><table><thead><tr><th>Área natural protegida</th><th>Categoría</th><th class="num">Focos (7 días)</th><th class="num">FRP total (MW)</th></tr></thead><tbody id="anp"></tbody></table></div>
     </details>
-    <p class="pie"><b>Cuadro 7.</b> Focos VIIRS limpios que caen dentro de los límites de ANP nacionales y Áreas de Conservación Regional (SERNANP), 14–21 de octubre de 2026.</p>
+    <p class="pie"><b>Cuadro 7.</b> Focos VIIRS (ya depurados: sin volcanes, fuentes fijas ni detecciones de baja confianza) que caen dentro de los límites de ANP nacionales y Áreas de Conservación Regional (SERNANP), 14–21 de octubre de 2026.</p>
   </section>
 
   <section class="tarjeta" id="s5">
@@ -386,7 +386,7 @@ footer { font-size: 13.5px; color: var(--muted); padding-block: 0 40px; display:
 
   <footer>
     <span>Código y datos procesados: repositorio <a href="https://github.com/av-gomez/incendios-peru-2026">github.com/av-gomez/incendios-peru-2026</a> (Python: pandas, geopandas, rasterio, rasterstats, scikit-learn, odc-stac).</span>
-    <span>Ciencia de Datos con Python · Universidad del Pacífico · Sesión 07, datos raster.</span>
+    <span>Ciencia de Datos con Python · Sesión 07, datos raster.</span>
   </footer>
 </main>
 
@@ -441,7 +441,7 @@ $("cifras").innerHTML = [
   ["", fmt(pob48), "personas a ≤ 5 km de incendios activos"],
   ["", fmt(D.anp.length), "áreas protegidas con focos dentro"],
 ].map(([c, b, s]) => `<div class="cifra ${c}"><b>${b}</b><span>${s}</span></div>`).join("") +
-  `<div class="chispa"><span class="t">Focos limpios por día, 14–21 de octubre (hora de Lima)</span><div id="chispa"></div></div>`;
+  `<div class="chispa"><span class="t">Focos de calor por día en el Perú, 14–21 de octubre (sin volcanes, fuentes fijas ni detecciones de baja confianza)</span><div id="chispa"></div></div>`;
 
 /* focos por día */
 (function () {
