@@ -1,9 +1,10 @@
 """Contexto de cada incendio: población (raster WorldPop), ANP (SERNANP) y clima (Open-Meteo).
-Termina con el índice de prioridad 0-100.
+Sin índices compuestos: cada variable se reporta por separado.
 
 Entrada : outputs/incendios.geojson, outputs/focos_limpios.geojson
           data/worldpop_per_2020_1km.tif, data/anp_0.geojson (nacionales), data/anp_2.geojson (regionales)
-Salida  : outputs/incendios_prioridad.geojson, outputs/anp_afectadas.csv, outputs/distritos_ranking.csv
+Salida  : outputs/incendios_contexto.geojson, outputs/anp_afectadas.csv,
+          outputs/distritos_focos.csv, outputs/departamentos_dia.csv
 """
 from pathlib import Path
 
@@ -19,8 +20,6 @@ UTM = 32718
 RADIO_M = 5_000
 HUELLA_MIN_HA = 100          # igual que el monitor del profe: incendios con huella > 100 ha
 
-PESOS = {"frp": 0.35, "activo": 0.20, "poblacion": 0.20, "anp": 0.10, "clima": 0.15}
-N_SIM, CONCENTRACION = 2000, 20     # Dirichlet: media = PESOS, dispersión moderada
 
 
 def cargar_anp() -> gpd.GeoDataFrame:
@@ -54,8 +53,30 @@ def clima(inc: gpd.GeoDataFrame) -> pd.DataFrame:
     return pd.DataFrame(filas).set_index("idx")
 
 
-def pct_rank(s: pd.Series) -> pd.Series:
-    return s.rank(pct=True).fillna(0)
+WORLDCOVER = {10: "Bosque", 20: "Arbustal", 30: "Pastizal", 40: "Cultivo", 50: "Urbano",
+              60: "Suelo desnudo", 70: "Nieve", 80: "Agua", 90: "Humedal", 95: "Manglar",
+              100: "Musgo/liquen"}
+
+
+def cobertura_en_punto(inc: gpd.GeoDataFrame) -> list[str]:
+    """Clase ESA WorldCover 2021 dominante en 300 x 300 m alrededor del centro de cada incendio."""
+    import planetary_computer
+    import pystac_client
+    import rasterio
+    from rasterio.windows import from_bounds
+
+    cat = pystac_client.Client.open("https://planetarycomputer.microsoft.com/api/stac/v1",
+                                    modifier=planetary_computer.sign_inplace)
+    clases = []
+    for lat, lon in zip(inc.lat, inc.lon):
+        item = next(cat.search(collections=["esa-worldcover"], intersects={
+            "type": "Point", "coordinates": [lon, lat]}).items())
+        with rasterio.open(item.assets["map"].href) as src:
+            win = from_bounds(lon - 0.0015, lat - 0.0015, lon + 0.0015, lat + 0.0015, src.transform)
+            v = src.read(1, window=win).ravel()
+        v = v[v > 0]
+        clases.append(WORLDCOVER.get(int(np.bincount(v).argmax()), "?") if v.size else "?")
+    return clases
 
 
 def main() -> None:
@@ -90,77 +111,49 @@ def main() -> None:
     print(f"ANP con focos dentro en 7 días: {len(tabla_anp)}")
     print(tabla_anp.head(10).to_string(index=False))
 
-    # clima de los próximos 3 días
-    cl = clima(inc)
-    inc = inc.join(cl)
-    # riesgo de propagación: seco, ventoso, sin lluvia (cada uno en percentiles)
-    inc["riesgo_clima"] = ((1 - pct_rank(inc.hr_min)) + pct_rank(inc.viento_max)
-                           + (inc.lluvia_3d < 1).astype(float)) / 3
+    # actividad reciente: focos en las últimas 24 h por incendio
+    corte = pd.to_datetime(focos.fecha_utc).max()
+    rec = focos[pd.to_datetime(focos.fecha_utc) >= corte - pd.Timedelta(hours=24)]
+    inc["focos_24h"] = inc.incendio_id.map(rec.groupby("incendio_id").size()).fillna(0).astype(int)
+    inc["estado"] = np.select([inc.focos_24h > 0, inc.focos_48h > 0],
+                              ["Activo: focos en las últimas 24 h", "Activo: focos hace 24–48 h"],
+                              "Sin focos en las últimas 48 h")
 
-    # índice de prioridad 0-100
-    comp = pd.DataFrame({
-        "frp": pct_rank(np.log1p(inc.frp_total)),
-        "activo": pct_rank(inc.focos_48h) * (inc.focos_48h > 0),
-        "poblacion": pct_rank(np.log1p(inc.poblacion_5km)),
-        "anp": inc.anp_en_riesgo.astype(float),
-        "clima": inc.riesgo_clima,
-    })
-    inc["prioridad"] = (sum(comp[k] * w for k, w in PESOS.items()) * 100).round(1)
-    for k in PESOS:
-        inc[f"c_{k}"] = comp[k].round(3)
+    # señal débil: solo detecciones diurnas y potencia baja -> posible quema agrícola o falsa
+    # detección sobre suelo caliente (frecuente en la costa desértica). Se marca, no se borra.
+    por_inc = focos.groupby("incendio_id")
+    inc["pct_diurno"] = inc.incendio_id.map(por_inc.daynight.apply(lambda s: (s == "D").mean()))
+    inc["frp_mediana"] = inc.incendio_id.map(por_inc.frp.median()).round(1)
+    inc["cobertura"] = cobertura_en_punto(inc)
+    inc["verificar"] = ((inc.pct_diurno == 1) & (inc.frp_mediana < 10)
+                        & inc.cobertura.isin(["Suelo desnudo", "Urbano"]))
 
-    # robustez de los pesos: 2000 juegos de pesos Dirichlet centrados en PESOS
-    rng = np.random.default_rng(2026)
-    base = np.array(list(PESOS.values()))
-    w = rng.dirichlet(base * CONCENTRACION, size=N_SIM)
-    puntajes = comp[list(PESOS)].to_numpy() @ w.T                 # (incendios, simulaciones)
-    rangos = (-puntajes).argsort(axis=0).argsort(axis=0) + 1
-    inc["p_top10"] = (rangos <= 10).mean(axis=1).round(3)
-    inc["rango_p05"] = np.percentile(rangos, 5, axis=1).astype(int)
-    inc["rango_p95"] = np.percentile(rangos, 95, axis=1).astype(int)
+    # clima de los próximos 3 días (valores tal cual, sin combinarlos)
+    inc = inc.join(clima(inc))
+    inc = inc.sort_values(["activo_48h", "huella_ha"], ascending=False).reset_index(drop=True)
+    inc.to_file(OUT / "incendios_contexto.geojson", driver="GeoJSON")
 
-    inc = inc.sort_values("prioridad", ascending=False).reset_index(drop=True)
-    inc["rango"] = np.arange(1, len(inc) + 1)
-    inc["nivel"] = np.select([inc.rango <= 10, inc.rango <= 30],
-                             ["Prioridad 1", "Prioridad 2"], "Seguimiento")
-    inc.to_file(OUT / "incendios_prioridad.geojson", driver="GeoJSON")
+    act = inc[inc.activo_48h]
+    print(f"\nincendios > {HUELLA_MIN_HA} ha: {len(inc)} | activos 48 h: {len(act)} | "
+          f"activos 24 h: {(inc.focos_24h > 0).sum()} | con ANP a <= 5 km: {inc.anp_en_riesgo.sum()} | "
+          f"personas a 5 km de incendios activos: {act.poblacion_5km.sum():,.0f}")
+    print(act[["distrito", "departamento", "huella_ha", "focos_24h", "focos_48h", "poblacion_5km",
+               "anp_cercana", "dist_anp_km", "hr_min", "viento_max", "lluvia_3d"]]
+          .to_string(index=False))
 
-    # esquemas alternativos de pesos: correlación de Spearman y coincidencia del top 10
-    esquemas = {
-        "Base (35/20/20/10/15)": PESOS,
-        "Pesos iguales": {k: 0.2 for k in PESOS},
-        "Sin clima": {"frp": 0.40, "activo": 0.25, "poblacion": 0.25, "anp": 0.10, "clima": 0},
-        "Énfasis población": {"frp": 0.20, "activo": 0.20, "poblacion": 0.40, "anp": 0.10,
-                              "clima": 0.10},
-        "Énfasis conservación": {"frp": 0.25, "activo": 0.20, "poblacion": 0.10, "anp": 0.30,
-                                 "clima": 0.15},
-    }
-    ref = sum(comp[k] * v for k, v in PESOS.items())
-    top_ref = set(ref.nlargest(10).index)
-    sens = []
-    for nombre, pw in esquemas.items():
-        s = sum(comp[k] * v for k, v in pw.items())
-        sens.append({"esquema": nombre, "spearman": round(ref.corr(s, method="spearman"), 3),
-                     "top10_comun": len(top_ref & set(s.nlargest(10).index))})
-    pd.DataFrame(sens).to_csv(OUT / "sensibilidad_pesos.csv", index=False, encoding="utf-8-sig")
-    print(pd.DataFrame(sens).to_string(index=False))
-
-    print(f"\nincendios > {HUELLA_MIN_HA} ha: {len(inc)} | activos 48 h: {inc.activo_48h.sum()} | "
-          f"con ANP a <= 5 km: {inc.anp_en_riesgo.sum()} | "
-          f"personas a 5 km (suma): {inc.poblacion_5km.sum():,.0f}")
-    print(inc.head(15)[["distrito", "departamento", "huella_ha", "focos_48h", "poblacion_5km",
-                        "anp_cercana", "dist_anp_km", "prioridad", "p_top10", "rango_p05",
-                        "rango_p95"]].to_string(index=False))
-
-    # ranking de distritos (todos los incendios grandes)
-    dist = (inc.groupby(["ubigeo", "distrito", "provincia", "departamento"])
-            .agg(incendios=("incendio_id", "size"), huella_ha=("huella_ha", "sum"),
-                 frp_total=("frp_total", "sum"), focos_48h=("focos_48h", "sum"),
-                 poblacion_5km=("poblacion_5km", "max"), prioridad_max=("prioridad", "max"))
-            .sort_values("prioridad_max", ascending=False).reset_index())
-    dist.to_csv(OUT / "distritos_ranking.csv", index=False, encoding="utf-8-sig")
-    print("\nTop 10 distritos")
+    # todos los focos limpios de la semana por distrito y por departamento-día
+    dist = (focos.groupby(["IDDIST", "NOMBDIST", "NOMBPROV", "NOMBDEP"])
+            .agg(focos_7d=("frp", "size"), frp_total=("frp", "sum"),
+                 ultimo=("fecha_lima", "max")).reset_index())
+    dist["focos_24h"] = dist.IDDIST.map(rec.groupby("IDDIST").size()).fillna(0).astype(int)
+    dist = dist.sort_values("focos_7d", ascending=False)
+    dist.to_csv(OUT / "distritos_focos.csv", index=False, encoding="utf-8-sig")
+    print(f"\ndistritos con focos en 7 días: {len(dist)}")
     print(dist.head(10).to_string(index=False))
+
+    dia = pd.to_datetime(focos.fecha_lima).dt.strftime("%Y-%m-%d")
+    matriz = focos.assign(dia=dia).groupby(["NOMBDEP", "dia"]).size().unstack(fill_value=0)
+    matriz.to_csv(OUT / "departamentos_dia.csv", encoding="utf-8-sig")
 
 
 if __name__ == "__main__":

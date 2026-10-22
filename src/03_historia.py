@@ -1,10 +1,11 @@
-"""¿Es 2026 un año récord? Focos S-NPP del 1 al 19 de octubre, 2012-2026, por departamento.
+"""¿Es 2026 un año récord? Focos S-NPP del 1 de octubre al último día completo de 2026, 2012-2026, por departamento.
 
 2012-2025: archivo anual FIRMS (viirs-snpp, Perú), solo `type == 0` (vegetación).
 2026     : INPE Queimadas, mensual de octubre, satélite NPP-375 (el mismo sensor S-NPP).
            Se calibra contra FIRMS 7d S-NPP en los días que se traslapan.
 Salida   : outputs/historia_octubre.csv, outputs/historia_departamentos.csv
 """
+import json
 from pathlib import Path
 
 import geopandas as gpd
@@ -12,7 +13,6 @@ import pandas as pd
 
 ROOT = Path(__file__).resolve().parent.parent
 DATA, OUT = ROOT / "data", ROOT / "outputs"
-DIA_FIN = 19          # último día completo en INPE (corte 20-oct 14:15 h): misma ventana todos los años
 
 
 def a_departamento(df: pd.DataFrame, lat: str, lon: str, dist: gpd.GeoDataFrame) -> pd.DataFrame:
@@ -22,6 +22,15 @@ def a_departamento(df: pd.DataFrame, lat: str, lon: str, dist: gpd.GeoDataFrame)
 
 def main() -> None:
     dist = gpd.read_file(DATA / "distritos.geojson")[["NOMBDEP", "geometry"]]
+
+    # 2026 desde INPE; la ventana termina en su último día completo (hora de Lima)
+    inpe = pd.read_csv(DATA / "inpe_202610.csv")
+    inpe = inpe[(inpe.pais == "Peru") & (inpe.satelite == "NPP-375")].copy()
+    inpe["fecha"] = pd.to_datetime(inpe.data_hora_gmt) - pd.Timedelta(hours=5)
+    corte_inpe = inpe.fecha.max()
+    DIA_FIN = (corte_inpe.normalize() - pd.Timedelta(days=1)).day
+    (OUT / "historia_meta.json").write_text(json.dumps(
+        {"dia_fin": DIA_FIN, "corte_inpe": corte_inpe.strftime("%d-%m-%Y %H:%M")}), encoding="utf-8")
 
     # 2012-2025
     filas = []
@@ -33,11 +42,6 @@ def main() -> None:
         h["anio"] = h.acq_date.dt.year
         filas.append(h[["anio", "NOMBDEP"]])
 
-    # 2026 desde INPE
-    inpe = pd.read_csv(DATA / "inpe_202610.csv")
-    inpe = inpe[(inpe.pais == "Peru") & (inpe.satelite == "NPP-375")].copy()
-    inpe["fecha"] = pd.to_datetime(inpe.data_hora_gmt) - pd.Timedelta(hours=5)
-    corte_inpe = inpe.fecha.max()
     inpe = inpe[inpe.fecha.dt.day <= DIA_FIN]
     inpe = a_departamento(inpe, "lat", "lon", dist)
     inpe["anio"] = 2026
