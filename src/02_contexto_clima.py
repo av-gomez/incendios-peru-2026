@@ -20,6 +20,7 @@ RADIO_M = 5_000
 HUELLA_MIN_HA = 100          # igual que el monitor del profe: incendios con huella > 100 ha
 
 PESOS = {"frp": 0.35, "activo": 0.20, "poblacion": 0.20, "anp": 0.10, "clima": 0.15}
+N_SIM, CONCENTRACION = 2000, 20     # Dirichlet: media = PESOS, dispersión moderada
 
 
 def cargar_anp() -> gpd.GeoDataFrame:
@@ -105,17 +106,51 @@ def main() -> None:
         "clima": inc.riesgo_clima,
     })
     inc["prioridad"] = (sum(comp[k] * w for k, w in PESOS.items()) * 100).round(1)
-    inc["nivel"] = pd.cut(inc.prioridad, [-1, 40, 60, 75, 101],
-                          labels=["Baja", "Media", "Alta", "Crítica"]).astype(str)
-    inc = inc.sort_values("prioridad", ascending=False)
+    for k in PESOS:
+        inc[f"c_{k}"] = comp[k].round(3)
+
+    # robustez de los pesos: 2000 juegos de pesos Dirichlet centrados en PESOS
+    rng = np.random.default_rng(2026)
+    base = np.array(list(PESOS.values()))
+    w = rng.dirichlet(base * CONCENTRACION, size=N_SIM)
+    puntajes = comp[list(PESOS)].to_numpy() @ w.T                 # (incendios, simulaciones)
+    rangos = (-puntajes).argsort(axis=0).argsort(axis=0) + 1
+    inc["p_top10"] = (rangos <= 10).mean(axis=1).round(3)
+    inc["rango_p05"] = np.percentile(rangos, 5, axis=1).astype(int)
+    inc["rango_p95"] = np.percentile(rangos, 95, axis=1).astype(int)
+
+    inc = inc.sort_values("prioridad", ascending=False).reset_index(drop=True)
+    inc["rango"] = np.arange(1, len(inc) + 1)
+    inc["nivel"] = np.select([inc.rango <= 10, inc.rango <= 30],
+                             ["Prioridad 1", "Prioridad 2"], "Seguimiento")
     inc.to_file(OUT / "incendios_prioridad.geojson", driver="GeoJSON")
+
+    # esquemas alternativos de pesos: correlación de Spearman y coincidencia del top 10
+    esquemas = {
+        "Base (35/20/20/10/15)": PESOS,
+        "Pesos iguales": {k: 0.2 for k in PESOS},
+        "Sin clima": {"frp": 0.40, "activo": 0.25, "poblacion": 0.25, "anp": 0.10, "clima": 0},
+        "Énfasis población": {"frp": 0.20, "activo": 0.20, "poblacion": 0.40, "anp": 0.10,
+                              "clima": 0.10},
+        "Énfasis conservación": {"frp": 0.25, "activo": 0.20, "poblacion": 0.10, "anp": 0.30,
+                                 "clima": 0.15},
+    }
+    ref = sum(comp[k] * v for k, v in PESOS.items())
+    top_ref = set(ref.nlargest(10).index)
+    sens = []
+    for nombre, pw in esquemas.items():
+        s = sum(comp[k] * v for k, v in pw.items())
+        sens.append({"esquema": nombre, "spearman": round(ref.corr(s, method="spearman"), 3),
+                     "top10_comun": len(top_ref & set(s.nlargest(10).index))})
+    pd.DataFrame(sens).to_csv(OUT / "sensibilidad_pesos.csv", index=False, encoding="utf-8-sig")
+    print(pd.DataFrame(sens).to_string(index=False))
 
     print(f"\nincendios > {HUELLA_MIN_HA} ha: {len(inc)} | activos 48 h: {inc.activo_48h.sum()} | "
           f"con ANP a <= 5 km: {inc.anp_en_riesgo.sum()} | "
           f"personas a 5 km (suma): {inc.poblacion_5km.sum():,.0f}")
     print(inc.head(15)[["distrito", "departamento", "huella_ha", "focos_48h", "poblacion_5km",
-                        "anp_cercana", "dist_anp_km", "hr_min", "viento_max", "prioridad",
-                        "nivel"]].to_string(index=False))
+                        "anp_cercana", "dist_anp_km", "prioridad", "p_top10", "rango_p05",
+                        "rango_p95"]].to_string(index=False))
 
     # ranking de distritos (todos los incendios grandes)
     dist = (inc.groupby(["ubigeo", "distrito", "provincia", "departamento"])

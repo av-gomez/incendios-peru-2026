@@ -1,4 +1,4 @@
-"""¿Es 2026 un año récord? Focos S-NPP del 1 al 21 de octubre, 2012-2026, por departamento.
+"""¿Es 2026 un año récord? Focos S-NPP del 1 al 19 de octubre, 2012-2026, por departamento.
 
 2012-2025: archivo anual FIRMS (viirs-snpp, Perú), solo `type == 0` (vegetación).
 2026     : INPE Queimadas, mensual de octubre, satélite NPP-375 (el mismo sensor S-NPP).
@@ -12,7 +12,7 @@ import pandas as pd
 
 ROOT = Path(__file__).resolve().parent.parent
 DATA, OUT = ROOT / "data", ROOT / "outputs"
-DIA_FIN = 21
+DIA_FIN = 19          # último día completo en INPE (corte 20-oct 14:15 h): misma ventana todos los años
 
 
 def a_departamento(df: pd.DataFrame, lat: str, lon: str, dist: gpd.GeoDataFrame) -> pd.DataFrame:
@@ -56,6 +56,7 @@ def main() -> None:
     print(f"INPE último dato (Lima): {corte_inpe}")
     print("Calibración INPE vs FIRMS (S-NPP, Perú):")
     print(cal.to_string())
+    cal.rename_axis("fecha").reset_index().to_csv(OUT / "calibracion_inpe_firms.csv", index=False)
 
     todo = pd.concat(filas)
     serie = todo.groupby("anio").size().rename("focos").reset_index()

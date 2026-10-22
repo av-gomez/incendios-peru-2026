@@ -127,7 +127,7 @@ def main() -> None:
     f_utm = zona.to_crs(32718)
     cmap = ListedColormap(["#1a9850", "#fee08b", "#fdae61", "#f46d43", "#a50026"])
     norm = BoundaryNorm([-1, 0.1, 0.27, 0.44, 0.66, 2], cmap.N)
-    fig, ax = plt.subplots(1, 3, figsize=(16, 5.6))
+    fig, ax = plt.subplots(1, 3, figsize=(16, 4.4))
     ax[0].imshow(rgb(a), extent=ext)
     ax[0].set_title(f"Antes · {FECHA_ANTES}")
     ax[1].imshow(rgb(d), extent=ext)
@@ -146,7 +146,7 @@ def main() -> None:
         x.set_xlim(ext[0], ext[1]); x.set_ylim(ext[2], ext[3])
     fig.suptitle("Curahuasi (Abancay, Apurímac) · Sentinel-2 L2A · órbita R039 (franja oeste sin cobertura)", fontsize=12)
     plt.tight_layout()
-    fig.savefig(OUT / "dnbr_curahuasi.png", dpi=130)
+    fig.savefig(OUT / "dnbr_curahuasi.png", dpi=130, bbox_inches="tight")
 
     # overlay transparente para el mapa web (en WGS84, bounds aproximados del bbox)
     rgba = cmap(norm(np.nan_to_num(dnbr, nan=-1)))
