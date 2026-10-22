@@ -54,7 +54,7 @@ b { font-weight: 700 }
 
 /* portada */
 .hero { background: linear-gradient(160deg, var(--hero) 0%, var(--hero-2) 100%); color: var(--hero-ink); padding-block: 34px 30px }
-.hero .ancho { display: grid; gap: 18px }
+.hero .ancho { display: grid; gap: 18px; grid-template-columns: minmax(0, 1fr) }
 .kicker { font: 700 12px var(--f-head); letter-spacing: .12em; text-transform: uppercase; color: var(--fire) }
 .autoria { font-size: 14.5px; color: var(--hero-muted); display: flex; flex-wrap: wrap; gap: 4px 18px }
 .hero-grid { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: 22px; align-items: stretch }
@@ -80,21 +80,21 @@ nav.indice a:hover, nav.indice a:focus-visible { background: var(--fire-soft); c
 body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 1001; background: var(--card) }
 
 /* secciones */
-main.ancho { display: grid; gap: 28px; padding-block: 28px 56px }
-section.tarjeta { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: clamp(18px, 3vw, 30px); display: grid; gap: 20px; min-width: 0 }
+main.ancho { display: grid; gap: 28px; padding-block: 28px 56px; grid-template-columns: minmax(0, 1fr) }
+section.tarjeta { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: clamp(14px, 3vw, 30px); display: grid; gap: 20px; min-width: 0; grid-template-columns: minmax(0, 1fr) }
 .texto { max-width: 76ch; display: grid; gap: 12px; color: var(--ink) }
 .dos { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 28px }
 .mapa-top { display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr); gap: 22px; align-items: start }
 @media (max-width: 980px) { .dos, .mapa-top { grid-template-columns: minmax(0, 1fr) } }
 .bloque { display: grid; gap: 10px; align-content: start; min-width: 0 }
 figure { margin: 0; display: grid; gap: 10px; min-width: 0 }
-figcaption, .pie { font-size: 14px; line-height: 1.5; color: var(--muted) }
+figcaption, .pie { font-size: 14px; line-height: 1.5; color: var(--muted); overflow-wrap: anywhere }
 figcaption b, .pie b { color: var(--ink) }
 .marco { border: 1px solid var(--line); border-radius: var(--r); overflow: hidden; background: var(--map-bg) }
 
 /* mapa */
 #mapa { height: 620px; background: var(--map-bg) }
-@media (max-width: 640px) { #mapa { height: 440px } body { font-size: 16px } }
+@media (max-width: 640px) { #mapa { height: 440px } body { font-size: 16px } .cifras { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) } .cifra b { font-size: 23px } }
 .leaflet-container { font-family: var(--f-body); background: var(--map-bg) }
 .leaflet-popup-content-wrapper, .leaflet-popup-tip { background: var(--card); color: var(--ink); border-radius: 8px }
 .leaflet-popup-content { margin: 12px 14px; font-size: 13.5px; line-height: 1.5 }
