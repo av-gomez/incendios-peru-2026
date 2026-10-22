@@ -1,68 +1,93 @@
-# Incendios en el Perú vistos desde el espacio · octubre 2026
+# La ola de incendios forestales de octubre de 2026 en el Perú, vista por satélite
 
-**Pregunta:** ¿dónde debería actuar primero un *policy maker* esta semana, y qué tan grave es esta temporada frente a 2012–2025?
+**Preguntas:** ¿dónde arde ahora?, ¿cómo evolucionó la semana?, ¿es una temporada excepcional?, ¿cuánto se quemó?, ¿qué y a quién expone el fuego?, ¿qué condiciones se esperan en los próximos días?
 
-Tarea de la sesión 07 (Datos raster) · Ciencia de Datos con Python · 21-oct-2026.
-Todo con datos públicos, sin claves ni pagos.
+Tarea de la sesión 07 (Datos raster) · Ciencia de Datos con Python · Amanda Gomez · 21-oct-2026.
+Todo con datos públicos, sin claves ni pagos. **Sin índices compuestos:** cada variable se reporta medida, por separado.
 
 **Repositorio:** https://github.com/av-gomez/incendios-peru-2026
 
-**Informe interactivo:** `outputs/dashboard.html` (ábrelo en el navegador; funciona sin servidor) · versión publicada: https://claude.ai/artifact/9q2KEBDdQXhE21xEBv8tFs
+**Informe interactivo:** `outputs/dashboard.html` (se abre en el navegador, sin servidor) · versión publicada: https://claude.ai/artifact/9q2KEBDdQXhE21xEBv8tFs
 
-![Mapa de prioridad](outputs/mapa_prioridad.png)
+![Focos por distrito e incendios activos](outputs/mapa_situacion.png)
 
-## 3 hallazgos
+## Contexto
 
-1. **Del 1 al 19 de octubre de 2026 hubo 11 918 focos S-NPP, +80 % sobre la media 2012–2025 (z = 1,86).** Es el 2.º valor de la serie, solo detrás de 2020 (12 669), comparando la misma ventana y el mismo sensor en todos los años. **8 departamentos rompieron su récord de octubre:** Junín, Apurímac, Ayacucho, Áncash, Huancavelica, Arequipa, Lima y Tacna. Lo anómalo es la sierra: Áncash +561 %, Apurímac +475 %, Huancavelica +364 %, Arequipa +325 %. En cambio, Madre de Dios está 63 % por debajo de su media.
-2. **En Curahuasi (Abancay, Apurímac) se quemaron ~1 946 ha entre el 5 y el 17 de octubre** (Sentinel-2, dNBR ≥ 0,27). El **91 % era pastizal**, el 7 % bosque y el 2 % arbustal. El número cae dentro del rango que obtuvo el profesor con otros métodos (696–2 782 ha) y cerca de su estimado comparable (1 786 ha).
-3. **124 incendios con huella > 100 ha en 7 días, 25 aún activos en las últimas 48 h.** Tienen ~43 000 personas a menos de 5 km, y 15 incendios grandes están a ≤ 5 km de un área protegida. **13 ANP tienen focos dentro**; las más golpeadas son la Reserva Paisajística Subcuenca del Cotahuasi (106 focos), el ACR Imiria (32) y el PN Huascarán (24). Prioridad más alta: **Mollepata (Cusco)**, con 9 focos en 48 h y a 4,6 km del ACR Choquequirao; le siguen Santa Cruz (Áncash, dentro del PN Huascarán), Cayna (Huánuco), Colcabamba (Huancavelica) y Curahuasi. El orden es robusto: con 2 000 juegos de pesos aleatorios, los cinco primeros siguen en el top 10 en el 80–95 % de los casos, y la ρ de Spearman frente a esquemas alternativos va de 0,87 a 0,97.
+Entre el 4 y el 21 de octubre de 2026 el Perú enfrenta una ola de incendios forestales. Al 19 de octubre, INDECI reportaba **12 fallecidos, 832 personas afectadas y 12 incendios activos**, y señalaba como puntos críticos **Río Tambo (Junín)** y **Curahuasi (Apurímac)**, con solo 2 helibaldes disponibles en el país ([Infobae, 19 oct.](https://www.infobae.com/peru/2026/10/19/peru-registra-12-incendios-forestales-activos-en-varias-regiones-segun-indeci/); [Infobae, 21 oct.](https://www.infobae.com/peru/2026/10/21/peru-solo-cuenta-con-dos-helibaldes-para-combatir-incendios-forestales-y-espera-sumar-nuevos-equipos-recien-a-mediados-de-noviembre/)). Mongabay documentó que el fuego en Río Tambo afecta comunidades asháninka y amenaza la Reserva Comunal Asháninka ([Mongabay, 13 oct.](https://es.mongabay.com/2026/10/peru-medio-centenar-incendios-forestales-trece-regiones-extienden-territorios-indigenas/)).
+
+## Hallazgos (corte satelital: 21-oct-2026, 14:19 h de Lima)
+
+1. **Dónde arde ahora.**
+   - En 7 días hubo **8 521 focos de calor** en **645 distritos**, 333 de ellos en las últimas 24 h.
+   - **21 incendios de más de 100 ha siguen activos** (con focos en las últimas 48 h).
+   - Los distritos con más focos son **Río Tambo (457), Nueva Requena (415) y Tahuania (294)**: la selva central y Ucayali concentran la actividad.
+2. **Cómo evolucionó la semana.**
+   - El pico fue el **16 de octubre, con 2 496 focos**. Desde el 17 la actividad cayó a entre 310 y 674 focos diarios.
+   - La caída no es pareja: Ucayali, Junín y Madre de Dios siguen con focos.
+3. **Es una temporada excepcional.**
+   - Del 1 al 20 de octubre se registraron **12 007 focos, +74 % sobre la media 2012–2025 (z = 1,81)**. Es el 2.º valor de la serie; solo lo supera 2020 (12 845).
+   - **8 departamentos superaron su máximo histórico**, la mayoría andinos: Áncash (+543 %), Apurímac (+453 %), Huancavelica (+334 %), Arequipa (+315 %), Tacna, Lima, Ayacucho y Junín.
+4. **Cuánto se quemó.**
+   - En **Curahuasi** se quemaron al menos **1 946 ha** entre el 5 y el 17 de octubre (Sentinel-2, dNBR ≥ 0,27).
+   - El **90 % era pastizal**.
+   - La cifra cae dentro del rango de 696 a 2 782 ha que dan otros métodos.
+5. **Qué y a quién expone.**
+   - **40 671 personas** viven a menos de 5 km de un incendio activo; la mayor exposición está en Yungay (13 014).
+   - **13 áreas protegidas** tienen focos dentro; la más afectada es la Reserva Paisajística Subcuenca del Cotahuasi (106).
+   - Los incendios activos arden sobre pastizal (11) y bosque (9).
+6. **Próximos 3 días.**
+   - 3 incendios activos tendrán humedad mínima menor a 30 %: Pueblo Libre, Curahuasi y Mollepata.
+   - Ninguno cumple la regla 30-30-30, porque el viento no supera los 30 km/h.
 
 ![dNBR Curahuasi](outputs/dnbr_curahuasi.png)
 
-## Datos y fechas
+## Datos
 
-| Dato | Fuente | Fecha / versión | Tipo |
+| Dato | Fuente | Fecha | Tipo |
 |---|---|---|---|
-| Focos de calor 7 días | NASA FIRMS VIIRS (S-NPP, NOAA-20, NOAA-21), CSV «South America 7d» | 14-oct → **21-oct-2026 14:19 h Lima** | Puntos |
-| Focos octubre 2026 | INPE Queimadas, mensual América del Sur, satélite NPP-375 | 1 → 20-oct-2026 14:15 h | Puntos |
-| Serie histórica | NASA FIRMS, archivo anual `viirs-snpp_{año}_Peru.csv` | 2012–2025 | Puntos |
-| Límites distritales | INEI vía `juaneladio/peru-geojson` | 1 834 distritos | Polígonos |
-| Áreas protegidas | SERNANP geoservicios (ANP nacionales + ACR) | descarga 21-oct | Polígonos |
-| Población | WorldPop 2020, 1 km | 2020 | **Raster** |
-| Imágenes | Sentinel-2 L2A, Planetary Computer, órbita R039, tiles T18LYK/T18LYL | 05-oct (1,0 % nubes) y 17-oct (0,3 % nubes) | **Raster** |
-| Cobertura | ESA WorldCover 10 m, Planetary Computer | 2021 | **Raster** |
-| Clima | Open-Meteo, pronóstico diario | 22 → 24-oct-2026 | API |
+| Focos de calor, 7 días | NASA FIRMS VIIRS (S-NPP, NOAA-20, NOAA-21) | 14 → 21-oct 14:19 h | Puntos |
+| Focos de octubre 2026 | INPE Queimadas (NPP-375) | 1 → 21-oct | Puntos |
+| Serie histórica | NASA FIRMS, archivo anual por país | 2012–2025 | Puntos |
+| Población | WorldPop, 1 km | 2020 | **Raster** |
+| Imágenes | Sentinel-2 L2A (Planetary Computer), órbita R039 | 5 y 17-oct | **Raster** |
+| Cobertura | ESA WorldCover, 10 m | 2021 | **Raster** |
+| Pronóstico | Open-Meteo | 22 → 24-oct | API |
+| Áreas protegidas | SERNANP geoservicios | consulta 21-oct | Polígonos |
+| Límites | INEI (juaneladio/peru-geojson) | 1 834 distritos | Polígonos |
+| Cifras oficiales | INDECI vía prensa | 19–21 oct | Texto |
 
 ## Método
 
 ```
-src/01_focos.py          FIRMS 7d → recorte al Perú → limpieza → incendios (DBSCAN)
-src/02_contexto_clima.py WorldPop a 5 km (zonal_stats) + ANP + Open-Meteo → índice de prioridad
-src/03_historia.py       Octubre 2012–2026 por departamento → ¿récord?
+src/01_focos.py          FIRMS 7 días → recorte al Perú → limpieza → incendios (DBSCAN ≤ 1 km, ≤ 48 h)
+src/02_contexto_clima.py Población (zonal_stats sobre WorldPop), ANP, cobertura en el punto, clima, estado;
+                         focos por distrito y por departamento-día
+src/03_historia.py       1 de octubre → último día completo, 2012–2026, por departamento
 src/04_dnbr.py           Sentinel-2 NBR/dNBR + WorldCover en Curahuasi
 src/05_dashboard.py      dashboard.html + mapa estático
 ```
 
-Para reproducir: `uv sync` y luego correr los cinco scripts en orden con `uv run python src/0X_*.py`. Los datos crudos van en `data/`, que no se versiona; la sección de abajo dice de dónde bajarlos.
+Para reproducir: `uv sync` y correr los scripts en orden con `uv run python src/0X_*.py`.
 
 **Decisiones**
 
-- **Limpieza de focos:** se quitan los de confianza baja (8 613 de 9 949 quedan). También se quitan los que caen en celdas de ~1 km (más sus vecinas) donde FIRMS marcó volcán (`type 1`) o fuente fija (`type 2`) entre 2012 y 2025, lo que deja 8 521 focos.
-- **Incendio:** focos a ≤ 1 km (DBSCAN haversine), cortando el cluster si hay más de 48 h sin focos. La huella es la unión de píxeles de 375 m. Se trabaja con huella > 100 ha, como el monitor del profesor.
-- **Población:** suma de WorldPop en un buffer de 5 km (en UTM 18S) con `rasterstats.zonal_stats`.
-- **Prioridad 0–100:** FRP total (log) 35 % + focos en 48 h 20 % + población a 5 km (log) 20 % + ANP a ≤ 5 km 10 % + clima 15 %. El clima combina humedad mínima baja, viento máximo alto y lluvia < 1 mm en 3 días. Cada componente va en rango percentil. Puestos 1–10 = Prioridad 1, 11–30 = Prioridad 2, el resto = Seguimiento.
-- **Robustez:** 2 000 juegos de pesos Dirichlet centrados en los pesos base (concentración 20). Para cada incendio se reporta P(top 10) y el rango del puesto en el 90 % central de las simulaciones. Además se comparan 4 esquemas alternativos de pesos (`outputs/sensibilidad_pesos.csv`).
-- **Récord:** focos S-NPP del 1 al 19 de octubre (último día completo en INPE), la misma ventana en todos los años. Para 2012–2025 se usa el archivo FIRMS con `type 0`; para 2026, INPE NPP-375. Ambos son el mismo sensor; la diferencia diaria en los días comunes fue de −19 % a +6 % (ver `03_historia.py`).
-- **dNBR:** NBR = (B08 − B12) / (B08 + B12) a 20 m, **restando el offset +1000 de L2A (baseline ≥ 04.00)**; sin esa corrección el área sale 9 veces menor. Las fechas antes y después son de la misma órbita para que cubran lo mismo. La máscara SCL quita nubes, sombras, agua, nieve y píxeles sin dato. Se considera quemado si dNBR ≥ 0,27 (USGS moderada-baja).
+- **Limpieza:** se quitan los focos de confianza baja y los que caen en celdas de ~1 km que FIRMS marcó como volcán o fuente fija en 2012–2025. De 9 949 focos quedan 8 521.
+- **Incendio:** focos a ≤ 1 km y sin pausas de más de 48 h. La huella es la unión de píxeles de 375 m. Se reportan los de huella > 100 ha.
+- **Estado:** según la última detección: focos en las últimas 24 h, hace 24–48 h, o sin focos en 48 h.
+- **Por verificar:** incendios con solo detecciones diurnas, potencia mediana < 10 MW y centro en suelo desnudo o urbano (WorldCover). Son 7 en la costa desértica (Moquegua, La Joya, Marcona): pueden ser quemas agrícolas o falsas detecciones sobre suelo caliente. Se muestran, pero no se suman.
+- **Sin índice compuesto:** las listas se ordenan por una sola variable medida (huella, focos en 48 h o población a 5 km), a elección del lector.
+- **Serie histórica:** misma ventana y mismo sensor (S-NPP) en todos los años; 2026 viene de INPE, calibrado contra FIRMS (−19 % a +6 % diario).
+- **dNBR:** NBR = (B08 − B12)/(B08 + B12) a 20 m, restando el offset +1000 de L2A (baseline ≥ 04.00). Antes y después de la misma órbita, máscara SCL y umbral 0,27 (Key y Benson, 2006).
+- **Clima:** valores crudos de Open-Meteo con la regla práctica 30-30-30 como referencia visual, no como puntaje.
 
 ## Limitaciones
 
-- **Un foco de calor no es un incendio:** es un píxel caliente cuando pasa el satélite. Las nubes y el humo esconden el fuego, y los incendios chicos o rápidos pueden no verse.
-- **La huella VIIRS (375 m) sobreestima el área;** para hectáreas quemadas usar el dNBR.
-- **En Curahuasi,** la órbita R039 no cubre la franja oeste del recuadro (45 % del recuadro quedó enmascarado, casi todo por eso), y la imagen del 17-oct es anterior al fin del incendio, que siguió con focos hasta el 21-oct. El área real probablemente es mayor.
-- **La serie compara la misma ventana (1–19 oct)**, pero INPE y FIRMS difieren día a día entre −19 % y +6 % (`outputs/calibracion_inpe_firms.csv`); el +80 % debe leerse con ese margen.
-- **Los pesos del índice son decisiones de este trabajo,** no una norma oficial. No reemplaza los reportes de COEN, INDECI, SERFOR ni SERNANP.
-- **Algunos nombres de ANP del servicio SERNANP vienen sin tildes** (el servicio devuelve los caracteres dañados).
+- **Un foco de calor no es un incendio:** es un píxel caliente al paso del satélite. Las nubes y el humo esconden el fuego.
+- **Las cifras satelitales y las oficiales miden cosas distintas:** grupos de focos frente a emergencias registradas en campo.
+- **La huella VIIRS sobreestima la superficie;** las hectáreas quemadas salen del dNBR.
+- **En Curahuasi la órbita no cubre el borde oeste** y el incendio siguió después del 17-oct. La cifra es un mínimo.
+- **WorldPop 2020 y WorldCover 2021 son anteriores a la temporada;** la población a 5 km es exposición potencial.
+- **No reemplaza los reportes** de COEN, INDECI, SERFOR ni SERNANP.
 
 ## Dónde bajar los datos
 
