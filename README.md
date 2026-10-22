@@ -5,6 +5,8 @@
 Tarea de la sesión 07 (Datos raster) · Ciencia de Datos con Python · Universidad del Pacífico · 21-oct-2026.
 Todo con datos públicos, sin claves ni pagos, y corre en CPU.
 
+**Repositorio:** https://github.com/av-gomez/incendios-peru-2026
+
 **Informe interactivo:** `outputs/dashboard.html` (ábrelo en el navegador; funciona sin servidor) · versión publicada: https://claude.ai/artifact/9q2KEBDdQXhE21xEBv8tFs
 
 ![Mapa de prioridad](outputs/mapa_prioridad.png)
