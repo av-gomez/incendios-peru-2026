@@ -1,0 +1,371 @@
+<title>Monitor de Incendios Perú 2026</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@75..100,500..800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/*__LEAFLET_CSS__*/
+/* Layout: banda de resumen arriba, mapa + cola de prioridad lado a lado, luego récord y caso Curahuasi en columnas */
+:root {
+  --bg: #f3f1ee;        /* ceniza clara */
+  --panel: #fbfaf8;
+  --fg: #1f1b18;
+  --muted: #6b625b;
+  --line: #ddd6cf;
+  --accent: #b8431c;    /* brasa */
+  --accent-soft: #f3d9cc;
+  --crit: #a50026; --alta: #e0572a; --media: #e9a23b; --baja: #8a9a5b;
+  --map-land: #e8e3dd; --map-line: #b9afa5;
+  --f-display: "Archivo", "Arial Narrow", Arial, sans-serif;
+  --f-body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+  --f-mono: "IBM Plex Mono", ui-monospace, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #171412; --panel: #211d1a; --fg: #f1ebe6; --muted: #a89d94; --line: #3a332e;
+  --accent: #ff7a45; --accent-soft: #4a2617;
+  --map-land: #2a2522; --map-line: #554b44; color-scheme: dark } }
+:root[data-theme="dark"] {
+  --bg: #171412; --panel: #211d1a; --fg: #f1ebe6; --muted: #a89d94; --line: #3a332e;
+  --accent: #ff7a45; --accent-soft: #4a2617;
+  --map-land: #2a2522; --map-line: #554b44; color-scheme: dark }
+
+* { box-sizing: border-box }
+body { background: var(--bg); color: var(--fg); font: 15px/1.5 var(--f-body);
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 20px 48px }
+.wrap { max-width: 1280px; margin: 0 auto; display: grid; gap: 28px }
+h1, h2, h3 { font-family: var(--f-display); font-stretch: 80%; text-wrap: balance; margin: 0; line-height: 1.05 }
+h1 { font-size: clamp(30px, 5vw, 52px); font-weight: 800; letter-spacing: -0.01em }
+h2 { font-size: clamp(22px, 3vw, 30px); font-weight: 700 }
+h3 { font-size: 18px; font-weight: 700 }
+p { margin: 0; max-width: 68ch }
+.eyebrow { font: 500 12px var(--f-mono); letter-spacing: .08em; text-transform: uppercase; color: var(--accent) }
+.muted { color: var(--muted) }
+.mono, .num { font-family: var(--f-mono); font-variant-numeric: tabular-nums }
+header { display: grid; gap: 10px; border-bottom: 2px solid var(--fg); padding-bottom: 18px }
+.corte { font: 13px var(--f-mono); color: var(--muted) }
+
+.kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 1px; background: var(--line); border: 1px solid var(--line) }
+.kpi { background: var(--panel); padding: 14px 16px; display: grid; gap: 4px; align-content: start }
+.kpi b { font: 700 34px/1 var(--f-display); font-stretch: 75%; font-variant-numeric: tabular-nums }
+.kpi.hot b { color: var(--accent) }
+.kpi span { font-size: 13px; color: var(--muted) }
+
+.grid2 { display: grid; grid-template-columns: minmax(0, 1.55fr) minmax(0, 1fr); gap: 20px }
+@media (max-width: 900px) { .grid2 { grid-template-columns: minmax(0, 1fr) } }
+.panel { background: var(--panel); border: 1px solid var(--line); padding: 16px; display: grid; gap: 12px; min-width: 0; align-content: start }
+#mapa { height: 560px; background: var(--bg); border: 1px solid var(--line) }
+@media (max-width: 600px) { #mapa { height: 420px } }
+.leaflet-container { font-family: var(--f-body); background: var(--bg) }
+.leaflet-popup-content-wrapper, .leaflet-popup-tip { background: var(--panel); color: var(--fg) }
+.leaflet-popup-content { margin: 10px 12px; font-size: 13px; line-height: 1.45 }
+.leyenda { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 12.5px; color: var(--muted); align-items: center }
+.dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 5px; vertical-align: -1px }
+
+.controles { display: flex; flex-wrap: wrap; gap: 8px; align-items: center }
+.chip { font: 500 12.5px var(--f-body); border: 1px solid var(--line); background: var(--bg); color: var(--fg); padding: 5px 10px; border-radius: 999px; cursor: pointer }
+.chip[aria-pressed="true"] { background: var(--fg); color: var(--bg); border-color: var(--fg) }
+.chip:focus-visible, button:focus-visible, select:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px }
+select { font: 13px var(--f-body); padding: 5px 8px; background: var(--bg); color: var(--fg); border: 1px solid var(--line) }
+
+.tabla-wrap { overflow-x: auto; max-height: 520px; overflow-y: auto }
+table { border-collapse: collapse; width: 100%; font-size: 13px }
+th { text-align: left; font: 500 11.5px var(--f-mono); letter-spacing: .04em; text-transform: uppercase; color: var(--muted); border-bottom: 1px solid var(--fg); padding: 6px 8px; position: sticky; top: 0; background: var(--panel) }
+td { border-bottom: 1px solid var(--line); padding: 7px 8px; vertical-align: top }
+td.num, th.num { text-align: right }
+tbody tr { cursor: pointer }
+tbody tr:hover { background: var(--accent-soft) }
+.pill { display: inline-block; font: 600 11px var(--f-mono); padding: 2px 7px; border-radius: 3px; color: #fff; white-space: nowrap }
+.pill.Crítica { background: var(--crit) } .pill.Alta { background: var(--alta) }
+.pill.Media { background: var(--media); color: #2a1a05 } .pill.Baja { background: var(--baja) }
+.pill.rec { background: var(--accent) }
+.lugar { font-weight: 600 } .sub { color: var(--muted); font-size: 12px }
+
+.barras { display: grid; gap: 5px }
+.barra { display: grid; grid-template-columns: 110px minmax(0, 1fr) 64px; gap: 8px; align-items: center; font-size: 13px }
+.barra .t { height: 14px; background: var(--line) }
+.barra .t i { display: block; height: 100%; background: var(--muted) }
+.barra.on .t i { background: var(--accent) }
+svg text { fill: var(--muted); font: 11px var(--f-mono) }
+svg .ref { stroke: var(--fg); stroke-dasharray: 3 3 }
+
+.fig { width: 100%; height: auto; border: 1px solid var(--line); background: #fff }
+.cmp td:first-child { width: 62% }
+.cmp tr.nuestro td { font-weight: 600; color: var(--accent) }
+.hallazgos { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px }
+.hallazgo { border-top: 3px solid var(--accent); padding-top: 10px; display: grid; gap: 6px }
+.hallazgo b { font: 700 28px/1 var(--f-display); font-stretch: 75% }
+ul { margin: 0; padding-left: 18px; display: grid; gap: 4px; max-width: 75ch }
+footer { font-size: 12.5px; color: var(--muted); border-top: 1px solid var(--line); padding-top: 14px; display: grid; gap: 6px }
+a { color: var(--accent) }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important } }
+</style>
+
+<div class="wrap">
+  <header>
+    <span class="eyebrow">Incendios forestales · Perú · temporada 2026</span>
+    <h1>¿Dónde atacar primero el fuego esta semana?</h1>
+    <p class="muted">Focos de calor VIIRS de los últimos 7 días agrupados en incendios, con población a 5 km, áreas protegidas, pronóstico de viento y humedad, comparación con 2012–2025 y área quemada medida con Sentinel-2 en Curahuasi.</p>
+    <span class="corte" id="corte"></span>
+  </header>
+
+  <section class="kpis" id="kpis" aria-label="Resumen"></section>
+
+  <section class="hallazgos" id="hallazgos" aria-label="Hallazgos"></section>
+
+  <section class="grid2">
+    <div class="panel">
+      <div class="controles" role="group" aria-label="Capas del mapa">
+        <h3 style="margin-right:auto">Mapa de prioridad</h3>
+        <button class="chip" id="c-focos" aria-pressed="true">Focos 48 h</button>
+        <button class="chip" id="c-anp" aria-pressed="true">Áreas protegidas</button>
+        <button class="chip" id="c-dnbr" aria-pressed="true">dNBR Curahuasi</button>
+      </div>
+      <div id="mapa" role="region" aria-label="Mapa de incendios"></div>
+      <div class="leyenda">
+        <span><i class="dot" style="background:var(--crit)"></i>Crítica</span>
+        <span><i class="dot" style="background:var(--alta)"></i>Alta</span>
+        <span><i class="dot" style="background:var(--media)"></i>Media</span>
+        <span><i class="dot" style="background:var(--baja)"></i>Baja</span>
+        <span>· tamaño = huella (ha)</span>
+        <span><i class="dot" style="background:#ffd23f;width:6px;height:6px"></i>foco últimas 48 h</span>
+        <span><i class="dot" style="background:#3f8f5a;opacity:.5;border-radius:2px"></i>ANP</span>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="controles">
+        <h3 style="margin-right:auto">Cola de prioridad</h3>
+        <label for="f-dep" class="sub">Departamento</label>
+        <select id="f-dep"><option value="">Todos</option></select>
+      </div>
+      <p class="sub">Incendios con huella &gt; 100 ha. Clic en una fila para ubicarlo en el mapa.</p>
+      <div class="tabla-wrap">
+        <table>
+          <thead><tr><th>#</th><th>Lugar</th><th class="num">ha</th><th class="num">Focos 48 h</th><th class="num">Pers. 5 km</th><th>Nivel</th></tr></thead>
+          <tbody id="tabla"></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <section class="grid2">
+    <div class="panel">
+      <span class="eyebrow">¿Año récord?</span>
+      <h2>Focos S-NPP entre el 1 y el 21 de octubre</h2>
+      <div id="serie"></div>
+      <p class="sub">2012–2025: archivo FIRMS (solo vegetación, <span class="mono">type = 0</span>). 2026: INPE Queimadas, satélite NPP-375, hasta el <span id="corte-inpe"></span>. Línea punteada = promedio 2012–2025.</p>
+    </div>
+    <div class="panel">
+      <h3>Departamentos frente a su propio historial</h3>
+      <div class="tabla-wrap" style="max-height:420px">
+        <table>
+          <thead><tr><th>Departamento</th><th class="num">2026</th><th class="num">Prom. 12–25</th><th class="num">vs prom.</th><th></th></tr></thead>
+          <tbody id="tabla-dep"></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <section class="panel">
+    <span class="eyebrow">Caso de estudio · Curahuasi, Abancay, Apurímac</span>
+    <h2>¿Cuánto se quemó? <span id="ha-cura"></span></h2>
+    <img class="fig" src="__FIGURA_DNBR__" alt="Sentinel-2 antes y después, y mapa dNBR de Curahuasi con focos VIIRS">
+    <div class="grid2">
+      <div class="panel" style="border:0;padding:0">
+        <h3>Severidad (dNBR, clases USGS)</h3>
+        <div class="barras" id="sev"></div>
+        <h3>¿Qué se quemó? (ESA WorldCover 2021)</h3>
+        <div class="barras" id="cob"></div>
+      </div>
+      <div class="panel" style="border:0;padding:0">
+        <h3>El número depende del método</h3>
+        <table class="cmp">
+          <thead><tr><th>Método y fechas</th><th class="num">ha</th></tr></thead>
+          <tbody id="cmp"></tbody>
+        </table>
+        <p class="sub" id="decisiones"></p>
+      </div>
+    </div>
+  </section>
+
+  <section class="grid2">
+    <div class="panel">
+      <h3>Áreas naturales protegidas con focos dentro (7 días)</h3>
+      <div class="barras" id="anp"></div>
+    </div>
+    <div class="panel">
+      <h3>Método</h3>
+      <ul>
+        <li><b>Focos:</b> NASA FIRMS VIIRS (S-NPP, NOAA-20, NOAA-21), últimos 7 días, recortados al Perú. Se quitan los de confianza baja y los que caen en celdas de ~1 km que FIRMS marcó como volcán o fuente fija entre 2012 y 2025.</li>
+        <li><b>Incendio:</b> focos a ≤ 1 km (DBSCAN) y sin pausas de más de 48 h. Huella = píxeles VIIRS de 375 m unidos.</li>
+        <li><b>Población:</b> WorldPop 2020 (1 km), suma en un radio de 5 km (<span class="mono">zonal_stats</span>).</li>
+        <li><b>Clima:</b> Open-Meteo, próximos 3 días: humedad mínima, viento máximo y lluvia.</li>
+        <li><b>Prioridad (0–100):</b> intensidad FRP 35 % · actividad 48 h 20 % · población 20 % · ANP a ≤ 5 km 10 % · clima 15 %. Cada componente en percentiles.</li>
+        <li><b>Área quemada:</b> Sentinel-2 L2A (Planetary Computer), NBR con B08 y B12, dNBR ≥ 0,27, máscara SCL.</li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="panel">
+    <h3>Limitaciones</h3>
+    <ul>
+      <li>Un foco de calor no es un incendio: es un píxel caliente en el paso del satélite. Las nubes y el humo esconden fuego, y un incendio pequeño o rápido puede no verse.</li>
+      <li>La huella VIIRS (375 m) sobreestima el área: para hectáreas quemadas usar el dNBR, no la huella.</li>
+      <li>En Curahuasi la órbita R039 de Sentinel-2 no cubre la franja oeste del recuadro, y la imagen del 17-oct es anterior al fin del incendio (siguió con focos hasta el 21-oct).</li>
+      <li>Los pesos del índice son una decisión de este trabajo, no una norma oficial. No reemplaza los reportes de COEN, INDECI, SERFOR ni SERNANP.</li>
+    </ul>
+  </section>
+
+  <footer>
+    <span>Fuentes: NASA FIRMS · INPE Queimadas · SERNANP geoservicios · WorldPop · Open-Meteo · Sentinel-2 L2A y ESA WorldCover vía Microsoft Planetary Computer · INEI (juaneladio/peru-geojson).</span>
+    <span>Ciencia de Datos con Python · Universidad del Pacífico · 21 de octubre de 2026.</span>
+  </footer>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script>
+const D = __DATOS__;
+const fmt = (n, d = 0) => Number(n).toLocaleString("es-PE", { maximumFractionDigits: d, minimumFractionDigits: d });
+const css = v => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+const COLOR = { "Crítica": "--crit", "Alta": "--alta", "Media": "--media", "Baja": "--baja" };
+const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+const titulo = s => String(s).toLowerCase().replace(/(^|\s)\S/g, m => m.toUpperCase());
+
+const inc = D.incendios;
+const activos = inc.filter(r => r.focos_48h > 0);
+const h26 = D.historia.find(r => r.anio === 2026);
+const ranking = [...D.historia].sort((a, b) => b.focos - a.focos);
+const puesto = ranking.findIndex(r => r.anio === 2026) + 1;
+const records = D.hist_dep.filter(r => r.record === true || r.record === "True");
+const anpRiesgo = inc.filter(r => r.dist_anp_km <= 5).length;
+const pob = activos.reduce((s, r) => s + r.poblacion_5km, 0);
+
+document.getElementById("corte").textContent = `Corte de datos: ${D.corte} (hora de Lima) · ${fmt(D.n_focos)} focos limpios en 7 días`;
+document.getElementById("corte-inpe").textContent = "20-oct, 14:15 h";
+
+document.getElementById("kpis").innerHTML = [
+  ["hot", fmt(inc.length), "incendios con huella > 100 ha en 7 días"],
+  ["hot", fmt(activos.length), "de ellos siguen activos (focos en 48 h)"],
+  ["", `+${fmt(h26.vs_promedio)}%`, `focos de octubre vs. promedio 2012–2025 (puesto ${puesto} de 15)`],
+  ["", fmt(records.length), "departamentos en récord de octubre"],
+  ["", fmt(D.anp.length), "áreas protegidas con focos dentro"],
+  ["", fmt(pob), "personas a 5 km de incendios activos"],
+].map(([c, b, s]) => `<div class="kpi ${c}"><b>${b}</b><span>${s}</span></div>`).join("");
+
+const top = inc[0];
+const dn = D.dnbr;
+const pasto = (dn.cobertura_ha["Pastizal"] || 0) / Object.values(dn.cobertura_ha).reduce((a, b) => a + b, 0) * 100;
+document.getElementById("hallazgos").innerHTML = [
+  [`+${fmt(h26.vs_promedio)} %`, `Octubre 2026 lleva ${fmt(h26.focos)} focos S-NPP, el ${puesto}.º más alto desde 2012 (solo lo supera 2020), y aún faltan 10 días. En la sierra el salto es mayor: ${records.map(r => titulo(r.NOMBDEP)).join(", ")} ya superaron su máximo histórico.`],
+  [`${fmt(dn.ha_quemadas_en_distrito)} ha`, `quemadas en Curahuasi entre el 5 y el 17 de octubre (dNBR ≥ 0,27). El ${fmt(pasto)} % era pastizal: el fuego golpea sobre todo pastos de ganadería altoandina, no bosque.`],
+  [`${fmt(top.prioridad, 0)} / 100`, `Prioridad más alta: ${titulo(top.distrito)} (${titulo(top.departamento)}), con ${top.focos_48h} focos en 48 h y a ${fmt(top.dist_anp_km, 1)} km de ${esc(top.anp_cercana)}. ${anpRiesgo} incendios grandes están a ≤ 5 km de un área protegida.`],
+].map(([b, t]) => `<div class="hallazgo"><b>${b}</b><p>${t}</p></div>`).join("");
+
+/* mapa */
+const mapa = L.map("mapa", { zoomControl: true, attributionControl: false, preferCanvas: true }).setView([-9.5, -75], 5);
+L.geoJSON(D.departamentos, { style: () => ({ color: css("--map-line"), weight: 0.8, fillColor: css("--map-land"), fillOpacity: 1 }),
+  onEachFeature: (f, l) => l.bindTooltip(titulo(f.properties.NOMBDEP), { sticky: true }) }).addTo(mapa);
+const capaAnp = L.geoJSON(D.anp_geo, { style: () => ({ color: "#3f8f5a", weight: 0.6, fillColor: "#3f8f5a", fillOpacity: 0.22 }),
+  onEachFeature: (f, l) => l.bindTooltip(esc(f.properties.anp), { sticky: true }) }).addTo(mapa);
+const b = D.dnbr.overlay_bounds;
+const capaDnbr = L.imageOverlay(D.overlay, b, { opacity: 0.9 }).addTo(mapa);
+const capaFocos = L.layerGroup(D.focos48.map(([la, lo, frp]) =>
+  L.circleMarker([la, lo], { radius: 2, color: "#ffd23f", weight: 0, fillOpacity: 0.9 }))).addTo(mapa);
+const marcadores = {};
+const capaInc = L.layerGroup().addTo(mapa);
+[...inc].reverse().forEach(r => {
+  const m = L.circleMarker([r.lat, r.lon], {
+    radius: Math.max(5, Math.sqrt(r.huella_ha) / 2.6), color: css("--fg"), weight: 0.8,
+    fillColor: css(COLOR[r.nivel]), fillOpacity: 0.85 })
+    .bindPopup(`<b>${titulo(r.distrito)}</b>, ${titulo(r.provincia)} (${titulo(r.departamento)})<br>
+      Prioridad <b>${fmt(r.prioridad, 1)}</b> · ${r.nivel}<br>
+      Huella ${fmt(r.huella_ha)} ha · ${r.n_focos} focos (${r.focos_48h} en 48 h)<br>
+      FRP total ${fmt(r.frp_total)} MW · ${fmt(r.poblacion_5km)} personas a 5 km<br>
+      ANP más cercana: ${esc(r.anp_cercana)} (${fmt(r.dist_anp_km, 1)} km)<br>
+      Próx. 3 días: HR mín. ${fmt(r.hr_min)} % · viento ${fmt(r.viento_max)} km/h · lluvia ${fmt(r.lluvia_3d, 1)} mm<br>
+      <span class="sub">${r.inicio} → ${r.ultimo}</span>`);
+  m.addTo(capaInc);
+  marcadores[r.incendio_id] = m;
+});
+function alternar(id, capa) {
+  const btn = document.getElementById(id);
+  btn.addEventListener("click", () => {
+    const on = btn.getAttribute("aria-pressed") === "true";
+    btn.setAttribute("aria-pressed", String(!on));
+    on ? mapa.removeLayer(capa) : capa.addTo(mapa);
+    capaInc.bringToFront && capaInc.eachLayer(l => l.bringToFront());
+  });
+}
+alternar("c-focos", capaFocos); alternar("c-anp", capaAnp); alternar("c-dnbr", capaDnbr);
+
+/* tabla de prioridad */
+const sel = document.getElementById("f-dep");
+[...new Set(inc.map(r => r.departamento))].sort().forEach(d => sel.insertAdjacentHTML("beforeend", `<option value="${esc(d)}">${titulo(d)}</option>`));
+function pintarTabla() {
+  const filas = inc.filter(r => !sel.value || r.departamento === sel.value);
+  document.getElementById("tabla").innerHTML = filas.map((r, i) => `
+    <tr data-id="${esc(r.incendio_id)}">
+      <td class="num">${i + 1}</td>
+      <td><span class="lugar">${titulo(r.distrito)}</span><br><span class="sub">${titulo(r.departamento)}${r.dist_anp_km <= 5 ? " · ANP" : ""}</span></td>
+      <td class="num">${fmt(r.huella_ha)}</td><td class="num">${r.focos_48h}</td>
+      <td class="num">${fmt(r.poblacion_5km)}</td>
+      <td><span class="pill ${r.nivel}">${fmt(r.prioridad)}</span></td></tr>`).join("");
+}
+sel.addEventListener("change", pintarTabla);
+document.getElementById("tabla").addEventListener("click", e => {
+  const tr = e.target.closest("tr"); if (!tr) return;
+  const m = marcadores[tr.dataset.id];
+  mapa.setView(m.getLatLng(), 11); m.openPopup();
+  document.getElementById("mapa").scrollIntoView({ behavior: "smooth", block: "center" });
+});
+pintarTabla();
+
+/* serie histórica en SVG */
+(function serie() {
+  const W = 640, H = 240, m = { l: 48, r: 10, t: 14, b: 26 };
+  const max = Math.ceil(Math.max(...D.historia.map(r => r.focos)) / 2000) * 2000;
+  const bw = (W - m.l - m.r) / D.historia.length;
+  const y = v => m.t + (H - m.t - m.b) * (1 - v / max);
+  const prom = D.historia.filter(r => r.anio < 2026).reduce((s, r) => s + r.focos, 0) / 14;
+  let s = `<svg viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="Focos de octubre por año">`;
+  for (let v = 0; v <= max; v += 2000)
+    s += `<line x1="${m.l}" x2="${W - m.r}" y1="${y(v)}" y2="${y(v)}" stroke="${css("--line")}"/><text x="${m.l - 6}" y="${y(v) + 4}" text-anchor="end">${fmt(v)}</text>`;
+  D.historia.forEach((r, i) => {
+    const x = m.l + i * bw + 3, c = r.anio === 2026 ? css("--accent") : css("--muted");
+    s += `<rect x="${x}" y="${y(r.focos)}" width="${bw - 6}" height="${y(0) - y(r.focos)}" fill="${c}" opacity="${r.anio === 2026 ? 1 : .55}"><title>${r.anio}: ${fmt(r.focos)} focos</title></rect>`;
+    s += `<text x="${x + (bw - 6) / 2}" y="${H - 8}" text-anchor="middle">${String(r.anio).slice(2)}</text>`;
+    if (r.anio === 2026) s += `<text x="${x + (bw - 6) / 2}" y="${y(r.focos) - 4}" text-anchor="middle" style="fill:${css("--accent")};font-weight:600">${fmt(r.focos)}</text>`;
+  });
+  s += `<line class="ref" x1="${m.l}" x2="${W - m.r}" y1="${y(prom)}" y2="${y(prom)}"/></svg>`;
+  document.getElementById("serie").innerHTML = s;
+})();
+
+document.getElementById("tabla-dep").innerHTML = D.hist_dep.filter(r => r.focos_2026 > 0).map(r => {
+  const rec = r.record === true || r.record === "True";
+  return `<tr><td>${titulo(r.NOMBDEP)}</td><td class="num">${fmt(r.focos_2026)}</td><td class="num">${fmt(r.promedio_2012_2025)}</td>
+    <td class="num" style="color:${r.vs_promedio > 0 ? css("--accent") : css("--muted")}">${r.vs_promedio > 0 ? "+" : ""}${fmt(r.vs_promedio)} %</td>
+    <td>${rec ? '<span class="pill rec">récord</span>' : `<span class="sub">máx. ${r.anio_maximo_previo}</span>`}</td></tr>`;
+}).join("");
+
+/* Curahuasi */
+document.getElementById("ha-cura").innerHTML = `<span style="color:var(--accent)">${fmt(dn.ha_quemadas_en_distrito)} ha</span>`;
+function barras(id, obj, resaltar) {
+  const max = Math.max(...Object.values(obj));
+  document.getElementById(id).innerHTML = Object.entries(obj).filter(([, v]) => v > 0).map(([k, v]) =>
+    `<div class="barra ${resaltar(k) ? "on" : ""}"><span>${esc(k)}</span><span class="t"><i style="width:${v / max * 100}%"></i></span><span class="num" style="text-align:right">${fmt(v)} ha</span></div>`).join("");
+}
+barras("sev", dn.severidad_ha, k => k !== "Baja");
+barras("cob", dn.cobertura_ha, k => k === "Pastizal");
+document.getElementById("cmp").innerHTML = [
+  ["Prof.: dNBR, imagen del 10-oct (fuego activo, 25 % nubes)", 696],
+  ["Prof.: dNBR ≥ 0,27, 5 al 17-oct, con máscara de nubes", 1786],
+  [`Este trabajo: dNBR ≥ 0,27, ${dn.fecha_antes} → ${dn.fecha_despues}, máscara SCL`, dn.ha_quemadas_en_distrito, true],
+  ["Prof.: Prithvi-EO-2.0 (NASA + IBM), HLS 10-oct", 2577],
+  ["Prof.: dNBR sembrado con focos VIIRS, imagen 15-oct", 2782],
+].map(([t, v, n]) => `<tr class="${n ? "nuestro" : ""}"><td>${t}</td><td class="num">${fmt(v)}</td></tr>`).join("");
+document.getElementById("decisiones").textContent =
+  `Escenas: ${dn.escena_antes} (${fmt(dn["nubes_antes_%"], 1)} % nubes) y ${dn.escena_despues} (${fmt(dn["nubes_despues_%"], 1)} % nubes). ` +
+  `${fmt(dn["pixeles_enmascarados_%"], 1)} % del recuadro quedó fuera (sin cobertura de la órbita, nubes o sombras). Con dNBR ≥ 0,10 (severidad baja incluida) el área sube a ${fmt(Object.values(dn.severidad_ha).reduce((a, b) => a + b, 0))} ha.`;
+
+barras("anp", Object.fromEntries(D.anp.map(r => [r.anp, r.focos])), () => true);
+document.querySelectorAll("#anp .num").forEach(e => e.textContent = e.textContent.replace(" ha", " focos"));
+</script>

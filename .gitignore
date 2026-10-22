@@ -1,0 +1,6 @@
+data/
+.venv/
+__pycache__/
+*.tif
+outputs/focos_limpios.geojson
+outputs/incendios.geojson

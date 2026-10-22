@@ -1,0 +1,50 @@
+{
+  "distrito": "CURAHUASI",
+  "fecha_antes": "2026-10-05",
+  "fecha_despues": "2026-10-17",
+  "escena_antes": "S2C_MSIL2A_20261005T145731_R039_T18LYK_20261005T175220",
+  "escena_despues": "S2A_MSIL2A_20261017T145731_R039_T18LYK_20261018T001002",
+  "nubes_antes_%": 0.959999,
+  "nubes_despues_%": 0.28432,
+  "pixeles_enmascarados_%": 45.42,
+  "umbral_dnbr": 0.27,
+  "bbox": [
+    -72.81716,
+    -13.703859999999999,
+    -72.38112000000001,
+    -13.52247
+  ],
+  "ha_quemadas_total_zona": 1963,
+  "ha_quemadas_en_distrito": 1946,
+  "severidad_ha": {
+    "Baja": 2852,
+    "Moderada-baja": 1618,
+    "Moderada-alta": 337,
+    "Alta": 7
+  },
+  "por_distrito_ha": {
+    "CURAHUASI": 1946,
+    "LIMATAMBO": 13,
+    "CHINCHAYPUJIO": 2,
+    "MOLLEPATA": 2,
+    "COTABAMBAS": 0
+  },
+  "cobertura_ha": {
+    "Pastizal": 1771,
+    "Bosque": 133,
+    "Arbustal": 44,
+    "Agua": 13,
+    "Cultivo": 1,
+    "Suelo desnudo": 0
+  },
+  "overlay_bounds": [
+    [
+      -13.708099849497943,
+      -72.81717964206373
+    ],
+    [
+      -13.51831082101041,
+      -72.38123578992183
+    ]
+  ]
+}
