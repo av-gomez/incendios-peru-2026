@@ -11,6 +11,21 @@ Todo con datos públicos, sin claves ni pagos. **Sin índices compuestos:** cada
 
 ![Focos por distrito e incendios activos](outputs/mapa_situacion.png)
 
+## Reel de 58 segundos con mi voz (sesión 15)
+
+[`reel/salidas/reel.mp4`](reel/salidas/reel.mp4) · posts: [`reel/salidas/posts.md`](reel/salidas/posts.md) · cómo se hizo: [`reel/README.md`](reel/README.md)
+
+Este README se convirtió en un guion con **Qwen3.8**, que yo revisé contra el texto. Luego lo narró **Qwen3-TTS** con mi voz clonada, **Whisper** lo subtituló y Pillow + ffmpeg armaron el video. Tiene el aviso «Voz generada con IA» durante todo el video.
+
+**Qué corregí del guion** (detalle en [`reel/revision.md`](reel/revision.md)). Todas las cifras de Qwen estaban en el texto, y aun así tuve que corregir:
+
+- **Facebook:** «ola de incendios **sin precedentes**» → **falso**. Octubre de 2026 es el 2.º valor de la serie 2012–2026: 2020 tuvo 12 845 focos.
+- «más que el **promedio histórico**» → «más que la **media 2012–2025**».
+- «40 671 personas **expuestas a incendios**» → «viven **a menos de 5 km** de un incendio activo» (exposición potencial, WorldPop 2020).
+- «**Siete incendios** en la costa» → «siete **detecciones por verificar**»: el informe no las cuenta como incendios.
+- LinkedIn: quité «cifras alarmantes», que es una opinión.
+- Agregué la escena del área quemada en Curahuasi (1 946 ha, Sentinel-2), que el guion omitía y es el único dato medido con raster.
+
 ## Contexto
 
 Entre el 4 y el 21 de octubre de 2026 el Perú enfrenta una ola de incendios forestales. Al 19 de octubre, INDECI reportaba **12 fallecidos, 832 personas afectadas y 12 incendios activos**, y señalaba como puntos críticos **Río Tambo (Junín)** y **Curahuasi (Apurímac)**, con solo 2 helibaldes disponibles en el país ([Infobae, 19 oct.](https://www.infobae.com/peru/2026/10/19/peru-registra-12-incendios-forestales-activos-en-varias-regiones-segun-indeci/); [Infobae, 21 oct.](https://www.infobae.com/peru/2026/10/21/peru-solo-cuenta-con-dos-helibaldes-para-combatir-incendios-forestales-y-espera-sumar-nuevos-equipos-recien-a-mediados-de-noviembre/)). Mongabay documentó que el fuego en Río Tambo afecta comunidades asháninka y amenaza la Reserva Comunal Asháninka ([Mongabay, 13 oct.](https://es.mongabay.com/2026/10/peru-medio-centenar-incendios-forestales-trece-regiones-extienden-territorios-indigenas/)).

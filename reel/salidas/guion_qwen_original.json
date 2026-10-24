@@ -1,0 +1,46 @@
+{
+  "titulo": "Incendios Perú octubre 2026",
+  "escenas": [
+    {
+      "frase": "¿Qué está pasando con los incendios forestales en el Perú este octubre de dos mil veintiséis?",
+      "cifra": "",
+      "etiqueta": "Pregunta central",
+      "visual": "titulo"
+    },
+    {
+      "frase": "En solo siete días se detectaron ocho mil quinientos veintiún focos de calor en seiscientos cuarenta y cinco distritos.",
+      "cifra": "8 521",
+      "etiqueta": "Focos de calor en 7 días",
+      "visual": "mapa"
+    },
+    {
+      "frase": "El pico llegó el dieciséis de octubre con dos mil cuatrocientos noventa y seis focos en un solo día.",
+      "cifra": "2 496",
+      "etiqueta": "Pico diario de focos",
+      "visual": "dias"
+    },
+    {
+      "frase": "Del primero al veinte de octubre hubo doce mil siete focos, setenta y cuatro por ciento más que el promedio histórico.",
+      "cifra": "+74 %",
+      "etiqueta": "Incremento sobre media histórica",
+      "visual": "historia"
+    },
+    {
+      "frase": "Cerca de cuarenta mil seiscientas setenta y una personas viven a menos de cinco kilómetros de un incendio activo.",
+      "cifra": "40 671",
+      "etiqueta": "Personas expuestas a incendios",
+      "visual": "exposicion"
+    },
+    {
+      "frase": "Siete incendios en la costa podrían ser quemas agrícolas o falsas detecciones, las cifras satelitales y oficiales miden cosas distintas.",
+      "cifra": "7",
+      "etiqueta": "Incendios por verificar",
+      "visual": "titulo"
+    }
+  ],
+  "posts": {
+    "x": "🔥 Octubre 2026: 8 521 focos de calor en 7 días en Perú. Pico de 2 496 el 16-oct. +74% sobre la media histórica. 40 671 personas expuestas. Datos satelitales públicos. #IncendiosPerú",
+    "linkedin": "La ola de incendios forestales de octubre 2026 en Perú muestra cifras alarmantes. Entre el 14 y 21 de octubre se detectaron 8 521 focos de calor en 645 distritos, con un pico de 2 496 focos el 16 de octubre.\n\nDel 1 al 20 de octubre se registraron 12 007 focos, un 74% más que el promedio histórico 2012-2025. Ocho departamentos superaron su máximo histórico, principalmente andinos.\n\nEn Curahuasi se quemaron al menos 1 946 hectáreas, el 90% pastizal. 40 671 personas viven a menos de 5 km de incendios activos.\n\nLos datos satelitales son públicos y reproducibles. Sin embargo, un foco de calor no es un incendio: las nubes pueden esconder el fuego real.\n\n#IncendiosForestales #Perú #DatosSatelitales",
+    "facebook": "🔥 Alerta en Perú: octubre 2026 registra una ola de incendios sin precedentes. 8 521 focos de calor en solo 7 días, con un pico de 2 496 el 16 de octubre.\n\nEsto representa un 74% más que el promedio histórico. En Curahuasi se quemaron 1 946 hectáreas y 40 671 personas están expuestas a incendios activos.\n\nLos datos satelitales son públicos. Recuerda: un foco de calor no siempre es un incendio real.\n\n#IncendiosPerú"
+  }
+}

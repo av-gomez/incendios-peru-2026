@@ -4,3 +4,10 @@ __pycache__/
 *.tif
 outputs/focos_limpios.geojson
 outputs/incendios.geojson
+
+# reel (sesión 15)
+reel/.venv/
+reel/salidas/*.wav
+reel/mi_voz.*
+reel/salidas/prueba_voz_windows/
+reel/salidas/log_reel.txt

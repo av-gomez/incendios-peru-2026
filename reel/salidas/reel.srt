@@ -1,0 +1,136 @@
+1
+00:00:00,000 --> 00:00:02,213
+¿Qué muestran los satélites sobre
+
+2
+00:00:02,213 --> 00:00:04,426
+los incendios forestales del Perú
+
+3
+00:00:04,426 --> 00:00:05,858
+en octubre de dos mil
+
+4
+00:00:05,858 --> 00:00:06,639
+veintiséis?
+
+5
+00:00:08,029 --> 00:00:09,313
+En solo siete días se
+
+6
+00:00:09,313 --> 00:00:11,646
+detectaron ocho mil quinientos veintiún
+
+7
+00:00:11,646 --> 00:00:13,396
+focos de calor en seiscientos
+
+8
+00:00:13,396 --> 00:00:15,029
+cuarenta y cinco distritos.
+
+9
+00:00:15,899 --> 00:00:17,780
+El pico llegó el dieciséis
+
+10
+00:00:17,780 --> 00:00:18,616
+de octubre,
+
+11
+00:00:18,616 --> 00:00:20,984
+con dos mil cuatrocientos noventa
+
+12
+00:00:20,984 --> 00:00:21,959
+y seis focos.
+
+13
+00:00:22,409 --> 00:00:23,925
+Del primero al veinte de
+
+14
+00:00:23,925 --> 00:00:25,623
+octubre hubo doce mil siete
+
+15
+00:00:25,623 --> 00:00:26,048
+focos:
+
+16
+00:00:26,048 --> 00:00:27,746
+setenta y cuatro por ciento
+
+17
+00:00:27,746 --> 00:00:29,141
+más que la media desde
+
+18
+00:00:29,141 --> 00:00:29,989
+dos mil doce.
+
+19
+00:00:30,759 --> 00:00:31,590
+En Curahuasi,
+
+20
+00:00:31,590 --> 00:00:33,725
+las imágenes Sentinel-2 muestran al
+
+21
+00:00:33,725 --> 00:00:35,682
+menos mil novecientas cuarenta y
+
+22
+00:00:35,682 --> 00:00:37,164
+seis hectáreas quemadas;
+
+23
+00:00:37,164 --> 00:00:38,706
+el noventa por ciento era
+
+24
+00:00:38,706 --> 00:00:39,299
+pastizal.
+
+25
+00:00:39,829 --> 00:00:41,976
+Cuarenta mil seiscientas setenta y
+
+26
+00:00:41,976 --> 00:00:43,632
+una personas viven a menos
+
+27
+00:00:43,632 --> 00:00:45,227
+de cinco kilómetros de un
+
+28
+00:00:45,227 --> 00:00:46,269
+incendio activo.
+
+29
+00:00:46,899 --> 00:00:47,229
+Ojo:
+
+30
+00:00:47,229 --> 00:00:48,548
+un foco de calor no
+
+31
+00:00:48,548 --> 00:00:49,603
+es un incendio.
+
+32
+00:00:49,603 --> 00:00:51,581
+Siete detecciones en la costa
+
+33
+00:00:51,581 --> 00:00:54,153
+desértica podrían ser quemas agrícolas
+
+34
+00:00:54,153 --> 00:00:55,339
+o suelo caliente.
+
